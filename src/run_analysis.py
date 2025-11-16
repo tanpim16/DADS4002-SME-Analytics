@@ -1,6 +1,4 @@
-from analysis_queries import *
+from analysis_5_3 import run_5_3
 
-# Example run:
-print(get_best_province_for_business("47111"))
-print(compare_two_provinces("47111", "กรุงเทพมหานคร", "เชียงใหม่"))
-print(find_high_potential_gap("47111"))
+# …
+run_5_3()
