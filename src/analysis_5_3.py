@@ -1,66 +1,107 @@
+# ==========================================================
+# analysis_5_3_gemini.py
+# SME Growth Gap Analysis (Task 5.3) using Gemini API
+# Clean Version: Stable & Production-ready
+# ==========================================================
+
+import google.generativeai as genai
 from analysis_queries import query_to_df
 
-# ------------------------------------------------
-# 1) ดึงรายชื่อประเภทธุรกิจ (TSIC2_DETAIL)
-# ------------------------------------------------
+# ----------------------------------------------------------
+# 0) Configure Gemini API
+# ----------------------------------------------------------
+genai.configure(api_key="AIzaSyDdQG8PncklU0ZChl3oeN2brk8vq1Hz4ho")
+
+# เลือกโมเดลที่รองรับ generate_content() บนระบบของผู้ใช้
+MODEL_NAME = "models/gemini-2.5-flash"
+model = genai.GenerativeModel(MODEL_NAME)
+
+
+# ----------------------------------------------------------
+# 1) ดึงรายการประเภทธุรกิจทั้งหมด (TSIC2_DETAIL)
+# ----------------------------------------------------------
 def get_business_types():
     sql = """
-    SELECT DISTINCT tsic2_detail
-    FROM sme_detail
-    ORDER BY tsic2_detail;
+        SELECT DISTINCT tsic2_detail
+        FROM sme_detail
+        ORDER BY tsic2_detail;
     """
     return query_to_df(sql)
 
 
-# ------------------------------------------------
-# 2) ขอ user เลือกประเภทธุรกิจ (TSIC2_DETAIL)
-# ------------------------------------------------
+# ----------------------------------------------------------
+# 2) Manual Mode — ให้ผู้ใช้เลือก Type เอง
+# ----------------------------------------------------------
 def ask_business_type():
     df = get_business_types()
-    print("\nAvailable Business Types (TSIC2_DETAIL):")
-    print(df)
 
-    tsic2 = input("\nEnter Business Type (TSIC2_DETAIL): ")
-    return tsic2
+    while True:
+        print("\n===== Search Business Types =====")
+        print("พิมพ์คำค้น (เช่น 'ส่ง', 'ซ่อม', 'อาหาร') หรือกด Enter เพื่อแสดงทั้งหมด")
 
+        keyword = input("Search: ").strip()
 
-# ------------------------------------------------
-# 3) Query คำนวณ Growth Gap โดยใช้ TSIC2_DETAIL
-# ------------------------------------------------
+        # ถ้าไม่พิมพ์อะไร → แสดงทั้งหมด
+        if keyword == "":
+            filtered = df
+        else:
+            filtered = df[df["tsic2_detail"].str.contains(keyword, case=False, na=False)]
+
+        if filtered.empty:
+            print("\n❗ ไม่พบผลลัพธ์ ลองคำอื่นอีกครั้งค่ะ\n")
+            continue
+
+        print("\nผลลัพธ์ที่พบ:\n")
+        for i in range(len(filtered)):
+            print(f"{i+1}) {filtered.iloc[i]['tsic2_detail']}")
+
+        # ให้ user เลือกตัวเลขจากรายการที่กรองแล้ว
+        try:
+            choice = int(input("\nEnter number: "))
+            if 1 <= choice <= len(filtered):
+                tsic2 = filtered.iloc[choice-1]["tsic2_detail"]
+                print(f"\nYou selected: {tsic2}\n")
+                return tsic2
+            else:
+                print("❗ ตัวเลขไม่ถูกต้อง ลองใหม่อีกครั้งค่ะ\n")
+        except:
+            print("❗ กรุณาพิมพ์เป็นตัวเลขค่ะ\n")
+
+# ----------------------------------------------------------
+# 3) Core Query — คำนวณ Growth Gap
+# ----------------------------------------------------------
 def find_high_potential_gap(tsic2):
     sql = """
-    SELECT 
-        s.province AS province,
-        SUM(s.number_sme) AS total_sme,
-        g.population_thousand,
-        g.gpp_per_capita,
+        SELECT 
+            s.province AS province,
+            SUM(s.number_sme) AS total_sme,
+            g.population_thousand,
+            g.gpp_per_capita,
+            (g.population_thousand * g.gpp_per_capita) AS economic_value,
 
-        (g.population_thousand * g.gpp_per_capita) AS economic_value,
+            CASE 
+                WHEN SUM(s.number_sme) > 0 THEN 
+                    (g.population_thousand * g.gpp_per_capita) / SUM(s.number_sme)
+                ELSE NULL
+            END AS growth_gap
 
-        CASE 
-            WHEN SUM(s.number_sme) > 0 THEN 
-                (g.population_thousand * g.gpp_per_capita) / SUM(s.number_sme)
-            ELSE NULL
-        END AS growth_gap
-
-    FROM sme_detail s
-    JOIN gpp_data g
-        ON s.province = g.province
-    WHERE s.tsic2_detail = %s
-    GROUP BY s.province, g.population_thousand, g.gpp_per_capita
-    ORDER BY growth_gap DESC
-    LIMIT 10;
+        FROM sme_detail s
+        JOIN gpp_data g
+            ON s.province = g.province
+        WHERE s.tsic2_detail = %s
+        GROUP BY s.province, g.population_thousand, g.gpp_per_capita
+        ORDER BY growth_gap DESC
+        LIMIT 10;
     """
-
     return query_to_df(sql, (tsic2,))
 
 
-# ------------------------------------------------
-# 4) สรุปผลสำหรับจังหวัดที่ “ควรเปิดกิจการที่สุด”
-# ------------------------------------------------
+# ----------------------------------------------------------
+# 4) Summary — จังหวัดที่เหมาะที่สุด
+# ----------------------------------------------------------
 def summarize_gap_result(tsic2, df):
     if df.empty:
-        return f"\n❗ No data found for Business Type {tsic2}"
+        return f"\n❗ No data found for Business Type: {tsic2}"
 
     top = df.iloc[0]
 
@@ -71,41 +112,116 @@ def summarize_gap_result(tsic2, df):
     gpp = top["gpp_per_capita"]
     eco_val = int(pop * gpp)
 
-    summary = f"""
+    return f"""
 ============================================================
 📌 Recommendation for Business Type: {tsic2}
 ============================================================
-
 จังหวัดที่เหมาะที่สุด:
 ➡️  **{province}**
 
 เหตุผล:
 - Demand สูง (ประชากร × GPP = {eco_val:,})
-- คู่แข่ง (SME ประเภทนี้) ยังน้อย ({sme} ราย)
-- Growth Gap = **{gap}** (ยิ่งสูง → ช่องว่างการเติบโตสูง)
+- คู่แข่งยังน้อย ({sme} ราย)
+- Growth Gap = **{gap}**
 
-💡 ข้อสรุปสำคัญ:
-ธุรกิจประเภท {tsic2} เหมาะอย่างยิ่งในการไปเปิดที่ **{province}**
-เพราะ Demand สูง แต่คู่แข่งยังน้อย → มีโอกาสครองตลาดก่อนรายอื่น
-
+💡 สรุป:
+ธุรกิจประเภท "{tsic2}" มีโอกาสเติบโตสูงมากในจังหวัด **{province}**
 ============================================================
 """
-    return summary
 
 
-# ------------------------------------------------
-# 5) ฟังก์ชันหลักของข้อ 5.3
-# ------------------------------------------------
+# ----------------------------------------------------------
+# 5) AI Mode — ให้ Gemini เลือกประเภทธุรกิจให้
+# ----------------------------------------------------------
+def ai_select_business_type():
+    sql = """
+        SELECT tsic2_detail, SUM(number_sme) AS total_sme
+        FROM sme_detail
+        GROUP BY tsic2_detail
+        HAVING SUM(number_sme) > 0
+        ORDER BY total_sme ASC
+        LIMIT 20;
+    """
+    df = query_to_df(sql)
+
+    prompt = f"""
+    You are an expert in Thai SME market analysis.
+
+    Below is the SME count for each business type:
+
+    {df.to_string()}
+
+    Please choose ONE tsic2_detail with:
+    - Low competition (few SMEs)
+    - High opportunity to enter
+    - High potential demand
+
+    Reply with ONLY the tsic2_detail.
+    """
+
+    response = model.generate_content(prompt)
+    return response.text.strip()
+
+
+# ----------------------------------------------------------
+# 6) AI Auto Recommendation Workflow
+# ----------------------------------------------------------
+def auto_find_best_province():
+    print("\n=== 🤖 AI Auto Recommendation Mode ===")
+
+    ai_tsic2 = ai_select_business_type()
+    print(f"\n🤖 Gemini selected: {ai_tsic2}")
+
+    df = find_high_potential_gap(ai_tsic2)
+
+    print("\nTop 10 Provinces with Highest Growth Gap:")
+    print(df)
+
+    summary = summarize_gap_result(ai_tsic2, df)
+    print(summary)
+
+    return df
+
+
+# ----------------------------------------------------------
+# 7) Manual Workflow
+# ----------------------------------------------------------
 def run_5_3():
-    print("\n=== SME Growth Gap Analysis (Task 5.3 using TSIC2_DETAIL) ===")
+    print("\n=== Manual Mode: SME Growth Gap Analysis ===")
 
     tsic2 = ask_business_type()
     df = find_high_potential_gap(tsic2)
 
-    print("\nTop 10 Provinces with Highest Growth Gap:")
+    print("\nTop 10 Provinces:")
     print(df)
 
     summary = summarize_gap_result(tsic2, df)
     print(summary)
 
-    return df
+
+# ----------------------------------------------------------
+# 8) Main Menu
+# ----------------------------------------------------------
+def menu():
+    print("\n===== SME Analytics Menu =====")
+    print("1) Manual Mode (เลือกหมวดเอง)")
+    print("2) AI Auto Recommendation (Gemini)")
+    print("0) Exit")
+
+    choice = input("\nEnter choice: ")
+
+    if choice == "1":
+        run_5_3()
+    elif choice == "2":
+        auto_find_best_province()
+    elif choice == "0":
+        print("\nBye!")
+    else:
+        print("Invalid choice")
+
+
+# ----------------------------------------------------------
+# 9) Entry Point
+# ----------------------------------------------------------
+if __name__ == "__main__":
+    menu()
