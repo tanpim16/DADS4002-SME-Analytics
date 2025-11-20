@@ -1,0 +1,14 @@
+[2025-11-20 22:49:35] READ job_vacancy
+[2025-11-20 22:50:13] UPDATE job_vacancy: พังงา -> 290
+[2025-11-20 22:50:19] READ job_vacancy
+[2025-11-20 22:51:00] UPDATE job_vacancy: เลย -> 150
+[2025-11-20 22:51:02] READ job_vacancy
+[2025-11-20 22:57:16] READ job_vacancy
+[2025-11-20 22:57:57] DELETE job_vacancy: ตาก (old value: 221)
+[2025-11-20 22:58:06] READ job_vacancy
+[2025-11-20 22:58:09] RESTORE job_vacancy: ตาก (value: 221)
+[2025-11-20 22:58:13] READ job_vacancy
+[2025-11-20 23:20:39] READ: job_vacancy
+[2025-11-20 23:21:04] DELETE job_vacancy: เลย, old_value=150
+[2025-11-20 23:21:12] RESTORE job_vacancy: เลย -> 150
+[2025-11-20 23:21:17] READ: job_vacancy
