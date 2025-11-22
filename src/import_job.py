@@ -7,7 +7,7 @@ import csv
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Tanpim16!",        # ถ้ามีรหัสผ่าน MySQL ให้ใส่ตรงนี้
+    password="Tanpim16!",
     database="sme_analysis"
 )
 

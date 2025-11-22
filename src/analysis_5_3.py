@@ -1,7 +1,6 @@
 # ==========================================================
 # analysis_5_3_gemini.py
-# SME Growth Gap Analysis (Task 5.3) using Gemini API
-# Clean Version: Stable & Production-ready
+# SME Growth Gap Analysis
 # ==========================================================
 
 import google.generativeai as genai
