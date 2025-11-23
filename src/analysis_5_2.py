@@ -1,10 +1,9 @@
 # ==========================================================
 # analysis_5_2.py — Compare 2 Provinces (Task 5.2) — UPDATED
-# With Business Type Search + AVG SME Logic (เหมือน 5.3)
+# With Business Type Search + AVG SME Logic (แบบ 5.3)
 # ==========================================================
 
 from analysis_queries import query_to_df
-
 
 # ----------------------------------------------------------
 # ดึงรายการประเภทธุรกิจทั้งหมด (TSIC2_DETAIL)
@@ -19,7 +18,7 @@ def get_business_types():
 
 
 # ----------------------------------------------------------
-# Search + เลือกประเภทธุรกิจ (เหมือน 5.3)
+# Search + เลือกประเภทธุรกิจ
 # ----------------------------------------------------------
 def choose_business_type():
     df = get_business_types()
@@ -54,32 +53,38 @@ def choose_business_type():
 
 
 # ----------------------------------------------------------
-# Query province comparison data (UPDATED to AVG LOGIC)
+# Query province comparison data (UPDATED → Year-based AVG)
 # ----------------------------------------------------------
 def compare_two_provinces(tsic2, provA, provB):
     sql = """
         SELECT 
-            s.province,
-            AVG(s.number_sme) AS avg_sme,
+            y.province,
+            AVG(y.year_sme) AS avg_sme,  -- SME เฉลี่ยรายปีจริง
             g.population_thousand,
             g.gpp_per_capita,
-
             (g.population_thousand * g.gpp_per_capita) AS economic_value,
 
-            CASE 
-                WHEN AVG(s.number_sme) > 0 THEN 
-                    (g.population_thousand * g.gpp_per_capita) / AVG(s.number_sme)
+            CASE
+                WHEN AVG(y.year_sme) > 0 THEN
+                    (g.population_thousand * g.gpp_per_capita) / AVG(y.year_sme)
                 ELSE NULL
             END AS growth_gap
 
-        FROM sme_detail s
+        FROM (
+            SELECT
+                province,
+                year,
+                SUM(number_sme) AS year_sme
+            FROM sme_detail
+            WHERE tsic2_detail = %s
+              AND province IN (%s, %s)
+            GROUP BY province, year
+        ) AS y
+
         JOIN gpp_data g
-            ON s.province = g.province
+            ON y.province = g.province
 
-        WHERE s.tsic2_detail = %s
-          AND s.province IN (%s, %s)
-
-        GROUP BY s.province, g.population_thousand, g.gpp_per_capita;
+        GROUP BY y.province, g.population_thousand, g.gpp_per_capita;
     """
     return query_to_df(sql, (tsic2, provA, provB))
 
@@ -118,11 +123,11 @@ def run_5_2():
     def print_summary(name, row):
         eco = int(row["economic_value"])
         gap = row["growth_gap"]
-        sme = round(row["avg_sme"], 1)
+        sme = round(row["avg_sme"], 2)
 
         print(f"\n{name}:")
         print(f"- Demand = {eco:,}")
-        print(f"- Competitors (avg 3 yrs) = {sme}")
+        print(f"- Competitors (avg per year) = {sme}")
         print(f"- Growth Gap = {gap:,.2f}")
 
     print_summary(A, rowA)
