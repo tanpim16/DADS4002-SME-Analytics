@@ -40,7 +40,6 @@ def ask_business_type():
 
         keyword = input("Search: ").strip()
 
-        # ถ้าไม่พิมพ์อะไร → แสดงทั้งหมด
         if keyword == "":
             filtered = df
         else:
@@ -54,7 +53,6 @@ def ask_business_type():
         for i in range(len(filtered)):
             print(f"{i+1}) {filtered.iloc[i]['tsic2_detail']}")
 
-        # ให้ user เลือกตัวเลขจากรายการที่กรองแล้ว
         try:
             choice = int(input("\nEnter number: "))
             if 1 <= choice <= len(filtered):
@@ -66,21 +64,22 @@ def ask_business_type():
         except:
             print("❗ กรุณาพิมพ์เป็นตัวเลขค่ะ\n")
 
+
 # ----------------------------------------------------------
-# 3) Core Query — คำนวณ Growth Gap
+# 3) Core Query — คำนวณ Growth Gap (AVG เวอร์ชันใหม่)
 # ----------------------------------------------------------
 def find_high_potential_gap(tsic2):
     sql = """
         SELECT 
             s.province AS province,
-            SUM(s.number_sme) AS total_sme,
+            AVG(s.number_sme) AS avg_sme,
             g.population_thousand,
             g.gpp_per_capita,
             (g.population_thousand * g.gpp_per_capita) AS economic_value,
 
             CASE 
-                WHEN SUM(s.number_sme) > 0 THEN 
-                    (g.population_thousand * g.gpp_per_capita) / SUM(s.number_sme)
+                WHEN AVG(s.number_sme) > 0 THEN 
+                    (g.population_thousand * g.gpp_per_capita) / AVG(s.number_sme)
                 ELSE NULL
             END AS growth_gap
 
@@ -95,9 +94,6 @@ def find_high_potential_gap(tsic2):
     return query_to_df(sql, (tsic2,))
 
 
-# ----------------------------------------------------------
-# 4) Summary — จังหวัดที่เหมาะที่สุด
-# ----------------------------------------------------------
 def summarize_gap_result(tsic2, df):
     if df.empty:
         return f"\n❗ No data found for Business Type: {tsic2}"
@@ -106,7 +102,7 @@ def summarize_gap_result(tsic2, df):
 
     province = top["province"]
     gap = round(top["growth_gap"], 2)
-    sme = int(top["total_sme"])
+    sme = round(top["avg_sme"], 1)
     pop = top["population_thousand"]
     gpp = top["gpp_per_capita"]
     eco_val = int(pop * gpp)
@@ -120,25 +116,33 @@ def summarize_gap_result(tsic2, df):
 
 เหตุผล:
 - Demand สูง (ประชากร × GPP = {eco_val:,})
-- คู่แข่งยังน้อย ({sme} ราย)
-- Growth Gap = **{gap}**
+- คู่แข่งเฉลี่ย {sme} รายต่อปี (เฉลี่ย 3 ปี)
+- Growth Gap = **{gap:,}**
+
+🧠 ความหมายของ Growth Gap:
+Growth Gap คือ “ดัชนีช่องว่างตลาด” (Market Gap Index)
+ที่วัดว่า **ตลาดใหญ่แค่ไหน เมื่อเทียบกับจำนวนผู้เล่นที่มีอยู่**
+
+คำนวณจาก:
+   (ประชากร × รายได้ต่อหัว) ÷ SME เฉลี่ย 3 ปี
+   
+ยิ่งค่า Growth Gap สูง แสดงว่ามีโอกาสเติบโตสูง
 
 💡 สรุป:
 ธุรกิจประเภท "{tsic2}" มีโอกาสเติบโตสูงมากในจังหวัด **{province}**
 ============================================================
 """
 
-
 # ----------------------------------------------------------
 # 5) AI Mode — ให้ Gemini เลือกประเภทธุรกิจให้
 # ----------------------------------------------------------
 def ai_select_business_type():
     sql = """
-        SELECT tsic2_detail, SUM(number_sme) AS total_sme
+        SELECT tsic2_detail, AVG(number_sme) AS avg_sme
         FROM sme_detail
         GROUP BY tsic2_detail
-        HAVING SUM(number_sme) > 0
-        ORDER BY total_sme ASC
+        HAVING AVG(number_sme) > 0
+        ORDER BY avg_sme ASC
         LIMIT 20;
     """
     df = query_to_df(sql)
@@ -146,12 +150,12 @@ def ai_select_business_type():
     prompt = f"""
     You are an expert in Thai SME market analysis.
 
-    Below is the SME count for each business type:
+    Below is the average SME count (3-year average) for each business type:
 
     {df.to_string()}
 
     Please choose ONE tsic2_detail with:
-    - Low competition (few SMEs)
+    - Low competition (few SMEs on average)
     - High opportunity to enter
     - High potential demand
 

@@ -1,9 +1,10 @@
 # ==========================================================
-# analysis_5_2.py — Compare 2 Provinces (Task 5.2) — FINAL
-# With Business Type Search (เหมือน 5.3)
+# analysis_5_2.py — Compare 2 Provinces (Task 5.2) — UPDATED
+# With Business Type Search + AVG SME Logic (เหมือน 5.3)
 # ==========================================================
 
 from analysis_queries import query_to_df
+
 
 # ----------------------------------------------------------
 # ดึงรายการประเภทธุรกิจทั้งหมด (TSIC2_DETAIL)
@@ -53,45 +54,50 @@ def choose_business_type():
 
 
 # ----------------------------------------------------------
-# Query province comparison data
+# Query province comparison data (UPDATED to AVG LOGIC)
 # ----------------------------------------------------------
 def compare_two_provinces(tsic2, provA, provB):
     sql = """
         SELECT 
             s.province,
-            SUM(s.number_sme) AS total_sme,
+            AVG(s.number_sme) AS avg_sme,
             g.population_thousand,
             g.gpp_per_capita,
+
             (g.population_thousand * g.gpp_per_capita) AS economic_value,
+
             CASE 
-                WHEN SUM(s.number_sme) > 0 THEN 
-                    (g.population_thousand * g.gpp_per_capita) / SUM(s.number_sme)
+                WHEN AVG(s.number_sme) > 0 THEN 
+                    (g.population_thousand * g.gpp_per_capita) / AVG(s.number_sme)
                 ELSE NULL
             END AS growth_gap
+
         FROM sme_detail s
         JOIN gpp_data g
             ON s.province = g.province
+
         WHERE s.tsic2_detail = %s
           AND s.province IN (%s, %s)
-        GROUP BY s.province, g.population_thousand, g.gpp_per_capita
+
+        GROUP BY s.province, g.population_thousand, g.gpp_per_capita;
     """
     return query_to_df(sql, (tsic2, provA, provB))
 
 
 # ----------------------------------------------------------
-# MAIN FUNCTION
+# MAIN FUNCTION (UPDATED SUMMARY TEXT)
 # ----------------------------------------------------------
 def run_5_2():
     print("\n=== Compare Two Provinces (Task 5.2) ===")
 
-    # 1) เลือกประเภทธุรกิจ (มี Search)
+    # 1) เลือกประเภทธุรกิจ
     tsic2 = choose_business_type()
 
     # 2) รับชื่อจังหวัด
     A = input("Enter Province A: ").strip()
     B = input("Enter Province B: ").strip()
 
-    # 3) Query
+    # 3) Query Data
     df = compare_two_provinces(tsic2, A, B)
 
     print("\n=== Data Table ===")
@@ -111,15 +117,18 @@ def run_5_2():
 
     def print_summary(name, row):
         eco = int(row["economic_value"])
+        gap = row["growth_gap"]
+        sme = round(row["avg_sme"], 1)
+
         print(f"\n{name}:")
         print(f"- Demand = {eco:,}")
-        print(f"- Competitors = {int(row['total_sme'])}")
-        print(f"- Growth Gap = {row['growth_gap']:.2f}")
+        print(f"- Competitors (avg 3 yrs) = {sme}")
+        print(f"- Growth Gap = {gap:,.2f}")
 
     print_summary(A, rowA)
     print_summary(B, rowB)
 
-    # 4) Recommendation
+    # 4) Recommendation (เลือกจังหวัดที่มีช่องว่างตลาดมากกว่า)
     better = A if rowA["growth_gap"] > rowB["growth_gap"] else B
-    print("\n💡 **Recommended:", better, "** (Growth Gap สูงกว่า)")
+    print("\n💡 **Recommended:", better, "** (โอกาสเติบโตสูงกว่า — Growth Gap มากกว่า)")
     print("====================================================\n")

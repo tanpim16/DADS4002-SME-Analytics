@@ -212,9 +212,9 @@ def restore_last_deleted():
 def main_menu():
     while True:
         print("\n=========== SME ANALYTICS MAIN MENU ===========")
-        print("1) Analysis 01")
-        print("2) Analysis 02")
-        print("3) Analysis 03 (Manual / AI)")
+        print("1) Market Overview Analysis")
+        print("2) Province Comparison")
+        print("3) SME Growth Gap Analysis (Manual / AI)")
         print("----------------------------------")
         print("4) Read job vacancy")
         print("5) Update job vacancy")
@@ -231,19 +231,19 @@ def main_menu():
         if ch == "1":
             if run_5_1:
                 run_5_1()
-                log_message("Run Analysis 01")
+                log_message("Run Market Overview Analysis")
             else:
-                print("❗ Analysis 5.1 ยังไม่พร้อม")
+                print("❗ Market Overview Analysis ยังไม่พร้อม")
 
         elif ch == "2":
             if run_5_2:
                 run_5_2()
-                log_message("Run Analysis 02")
+                log_message("Run Province Comparison")
             else:
-                print("❗ Analysis 5.2 ยังไม่พร้อม")
+                print("❗ Province Comparison ยังไม่พร้อม")
 
         elif ch == "3":
-            print("\n=== Analysis 03 ===")
+            print("\n=== SME Growth Gap Analysis ===")
             print("1) Manual Mode")
             print("2) AI Recommendation (Gemini)")
 
@@ -251,11 +251,11 @@ def main_menu():
 
             if sub == "1":
                 run_5_3()
-                log_message("Run Analysis 03 Manual")
+                log_message("Run SME Growth Gap Analysis (Manual)")
 
             elif sub == "2":
                 auto_find_best_province()
-                log_message("Run Analysis 03 AI")
+                log_message("Run SME Growth Gap Analysis (AI)")
 
             else:
                 print("❗ เมนูไม่ถูกต้อง")
@@ -278,11 +278,11 @@ def main_menu():
 
         # Exit
         elif ch == "0":
-            print("\n👋 ออกจากโปรแกรมแล้วค่ะ")
+            print("\n ออกจากโปรแกรม")
             break
 
         else:
-            print("❗ เมนูไม่ถูกต้อง ลองใหม่ค่ะ")
+            print("❗ เมนูไม่ถูกต้อง ลองใหม่")
 
 
 # -------------------------------------------------------------
