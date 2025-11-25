@@ -134,7 +134,7 @@ def run_5_1():
     print("\n=== Market Overview Analysis (Task 5.1) ===\n")
     
     # 1) Max Business Size
-    print("📊 1. Max Business Size (Highest Proportion)")
+    print("1. Max Business Size (Highest Proportion)")
     print("-" * 50)
     df_max_size = get_max_business_size()
     if not df_max_size.empty:
@@ -151,7 +151,7 @@ def run_5_1():
     print("\n")
     
     # 2) Min Business Size
-    print("📊 2. Min Business Size (Lowest Proportion)")
+    print("2. Min Business Size (Lowest Proportion)")
     print("-" * 50)
     df_min_size = get_min_business_size()
     if not df_min_size.empty:
@@ -166,7 +166,7 @@ def run_5_1():
     print("\n")
     
     # 3) Max Frequency Business Type
-    print("📊 3. Max Frequency Business Type")
+    print("3. Max Frequency Business Type")
     print("-" * 50)
     df_max_freq = get_max_business_type_frequency()
     if not df_max_freq.empty:
@@ -178,7 +178,7 @@ def run_5_1():
     print("\n")
     
     # 4) Min Frequency Business Type
-    print("📊 4. Min Frequency Business Type")
+    print("4. Min Frequency Business Type")
     print("-" * 50)
     df_min_freq = get_min_business_type_frequency()
     if not df_min_freq.empty:
@@ -190,7 +190,7 @@ def run_5_1():
     print("\n")
     
     # 5) Highest SME-to-Population Ratio Province
-    print("📊 5. Province with Highest SME-to-Population Ratio")
+    print("5. Province with Highest SME-to-Population Ratio")
     print("-" * 50)
     df_high_density = get_highest_sme_density()
     if not df_high_density.empty:
@@ -204,7 +204,7 @@ def run_5_1():
     print("\n")
     
     # 6) Lowest SME-to-Population Ratio Province
-    print("📊 6. Province with Lowest SME-to-Population Ratio")
+    print("6. Province with Lowest SME-to-Population Ratio")
     print("-" * 50)
     df_low_density = get_lowest_sme_density()
     if not df_low_density.empty:
@@ -218,7 +218,7 @@ def run_5_1():
     print("\n")
     
     print("=" * 50)
-    print("✅ Market Overview Analysis Complete!")
+    print("✅ Market Overview Analysis Complete")
     print("=" * 50)
 
 # ----------------------------------------------------------
@@ -226,4 +226,5 @@ def run_5_1():
 # ----------------------------------------------------------
 if __name__ == "__main__":
     run_5_1()
+
 
