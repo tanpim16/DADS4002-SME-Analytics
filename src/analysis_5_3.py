@@ -152,54 +152,79 @@ Growth Gap คือ “ดัชนีช่องว่างตลาด”
 
 
 # ----------------------------------------------------------
-# 5) AI Mode — ให้ Gemini เลือกประเภทธุรกิจให้
+# 5) AI Province Recommendation (ใหม่)
 # ----------------------------------------------------------
-def ai_select_business_type():
-    sql = """
-        SELECT tsic2_detail, AVG(number_sme) AS avg_sme
-        FROM sme_detail
-        GROUP BY tsic2_detail
-        HAVING AVG(number_sme) > 0
-        ORDER BY avg_sme ASC
-        LIMIT 20;
-    """
-    df = query_to_df(sql)
-
+def ai_recommend_province(tsic2, top5_df):
     prompt = f"""
-    You are an expert in Thai SME market analysis.
+    You are a senior Thai SME market analyst.
 
-    Below is the average SME count (3-year average) for each business type:
+    Business Type: {tsic2}
 
-    {df.to_string()}
+    Below are the TOP 5 provinces with the highest Growth Gap:
 
-    Please choose ONE tsic2_detail with:
-    - Low competition (few SMEs on average)
-    - High opportunity to enter
-    - High potential demand
+    {top5_df.to_string(index=False)}
 
-    Reply with ONLY the tsic2_detail.
+    Your tasks:
+    1) เลือกจังหวัดเดียวที่เหมาะสมที่สุด
+    2) สรุปเหตุผลแบบ Manager Summary (3–4 ประโยค)
+    3) สรุปจุดขายของจังหวัดจำนวน 3 ข้อ (ประโยคสั้นๆ)
+    4) เพิ่ม "ข้อควรระวัง" อย่างน้อย 1–2 ข้อ (ให้กระชับ)
+    5) เพิ่ม "ข้อแนะนำเชิงกลยุทธ์" 1–2 ข้อ (ประโยคสั้น)
+    6) ปิดท้ายด้วยประโยคสรุป 1 ประโยค
+    7) ห้ามใช้ตัวหนา หรือสัญลักษณ์ ** ทั้งหมด
+
+    Output format (สำคัญมาก):
+    จังหวัดที่แนะนำ: <ชื่อจังหวัด>
+
+    เหตุผลแบบสรุป:
+    - <ประโยคสั้น>
+    - <ประโยคสั้น>
+    - <ประโยคสั้น>
+
+    จุดขายของจังหวัด:
+    1) <จุดขาย 1>
+    2) <จุดขาย 2>
+    3) <จุดขาย 3>
+
+    เขียนเป็นภาษาไทยทั้งหมด
+    และวิเคราะห์เฉพาะข้อมูลจากตารางที่ให้ไปเท่านั้น
     """
 
     response = model.generate_content(prompt)
     return response.text.strip()
 
 
+
 # ----------------------------------------------------------
-# 6) AI Auto Recommendation Workflow
+# 6) AI Auto Recommendation Workflow (ใหม่)
 # ----------------------------------------------------------
 def auto_find_best_province():
-    print("\n=== 🤖 AI Auto Recommendation Mode ===")
+    print("\n=== 🤖 AI Recommendation Mode ===")
 
-    ai_tsic2 = ai_select_business_type()
-    print(f"\n🤖 Gemini selected: {ai_tsic2}")
+    # ผู้ใช้เลือกประเภทธุรกิจเอง
+    tsic2 = ask_business_type()
+    print(f"\n📌 Selected Business Type: {tsic2}\n")
 
-    df = find_high_potential_gap(ai_tsic2)
+    # คำนวณช่องว่างตลาด
+    df = find_high_potential_gap(tsic2)
 
+    if df.empty:
+        print("❗ Data not found for this business type.")
+        return
+
+    # แสดง Top 10
     print("\nTop 10 Provinces with Highest Growth Gap:")
     print(df)
 
-    summary = summarize_gap_result(ai_tsic2, df)
-    print(summary)
+    # ส่งแค่ Top 5 ให้ AI วิเคราะห์ให้ละเอียด
+    top5 = df.head(5)
+    print("\nSending Top 5 to Gemini for recommendation...\n")
+
+    ai_summary = ai_recommend_province(tsic2, top5)
+
+    print("\n=========== 🧠 Gemini Recommendation ===========")
+    print(ai_summary)
+    print("================================================\n")
 
     return df
 
