@@ -1,6 +1,5 @@
 # =============================================================
 # main.py — Full SME Analytics Management Program (FINAL)
-# by Tanya & ChatGPT
 # =============================================================
 
 import mysql.connector

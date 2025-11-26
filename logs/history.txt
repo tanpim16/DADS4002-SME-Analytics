@@ -31,3 +31,15 @@
 [2025-11-23 21:32:17] Run Province Comparison
 [2025-11-23 21:34:37] Run Market Overview Analysis
 [2025-11-23 21:51:38] Run Province Comparison
+[2025-11-26 20:02:58] READ: job_vacancy
+[2025-11-26 20:03:16] Run Market Overview Analysis
+[2025-11-26 20:13:19] READ: job_vacancy
+[2025-11-26 20:16:18] UPDATE job_vacancy: น่าน -> 156
+[2025-11-26 20:16:27] READ: job_vacancy
+[2025-11-26 20:16:52] DELETE job_vacancy: ตรัง, old_value=260
+[2025-11-26 20:17:01] RESTORE job_vacancy: ตรัง -> 260
+[2025-11-26 20:17:46] READ: job_vacancy
+[2025-11-26 20:18:38] Run Market Overview Analysis
+[2025-11-26 20:22:44] Run Province Comparison
+[2025-11-26 20:23:42] Run Province Comparison
+[2025-11-26 20:28:18] Run SME Growth Gap Analysis (AI)

@@ -9,7 +9,7 @@ from analysis_queries import query_to_df
 # ----------------------------------------------------------
 # 0) Configure Gemini API
 # ----------------------------------------------------------
-genai.configure(api_key="AIzaSyDdQG8PncklU0ZChl3oeN2brk8vq1Hz4ho")
+genai.configure(api_key="AIzaSyCiExwG4rCruH5ihNl5JB6mIvbPHMYebik")
 
 # เลือกโมเดลที่รองรับ generate_content() บนระบบของผู้ใช้
 MODEL_NAME = "models/gemini-2.5-flash"
