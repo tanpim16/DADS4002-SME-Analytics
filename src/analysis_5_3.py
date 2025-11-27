@@ -9,7 +9,7 @@ from analysis_queries import query_to_df
 # ----------------------------------------------------------
 # 0) Configure Gemini API
 # ----------------------------------------------------------
-genai.configure(api_key="AIzaSyCiExwG4rCruH5ihNl5JB6mIvbPHMYebik")
+genai.configure(api_key="AIzaSyB3lOs8_0YL8Xzux_Qac_5WbgaMoeRUhzs")
 
 # เลือกโมเดลที่รองรับ generate_content() บนระบบของผู้ใช้
 MODEL_NAME = "models/gemini-2.5-flash"
@@ -152,11 +152,14 @@ Growth Gap คือ “ดัชนีช่องว่างตลาด”
 
 
 # ----------------------------------------------------------
-# 5) AI Province Recommendation (ใหม่)
+# 5) AI Province Recommendation (เวอร์ชันใหม่ — Deep Insight)
 # ----------------------------------------------------------
 def ai_recommend_province(tsic2, top5_df):
     prompt = f"""
-    You are a senior Thai SME market analyst.
+    You are a senior Thai SME market analyst with access to deep contextual knowledge.
+    Analyze both:
+    - The data table provided below (Growth Gap metrics)
+    - General real-world knowledge about each province (economy, tourism, logistics, population behavior, SME ecosystem)
 
     Business Type: {tsic2}
 
@@ -165,13 +168,18 @@ def ai_recommend_province(tsic2, top5_df):
     {top5_df.to_string(index=False)}
 
     Your tasks:
-    1) เลือกจังหวัดเดียวที่เหมาะสมที่สุด
-    2) สรุปเหตุผลแบบ Manager Summary (3–4 ประโยค)
-    3) สรุปจุดขายของจังหวัดจำนวน 3 ข้อ (ประโยคสั้นๆ)
-    4) เพิ่ม "ข้อควรระวัง" อย่างน้อย 1–2 ข้อ (ให้กระชับ)
-    5) เพิ่ม "ข้อแนะนำเชิงกลยุทธ์" 1–2 ข้อ (ประโยคสั้น)
-    6) ปิดท้ายด้วยประโยคสรุป 1 ประโยค
-    7) ห้ามใช้ตัวหนา หรือสัญลักษณ์ ** ทั้งหมด
+    1) เลือกจังหวัดเดียวที่เหมาะสมที่สุด (อิงข้อมูลจากตารางเป็นหลัก + เสริมด้วยข้อมูลทั่วไปของจังหวัด)
+    2) ให้เหตุผลแบบ Manager Summary (3–4 ประโยค) รวมทั้ง insight ที่อาจไม่ได้อยู่ในตาราง เช่น:
+       - จุดเด่นเศรษฐกิจ
+       - ภูมิศาสตร์
+       - แหล่งท่องเที่ยวหลัก
+       - อุตสาหกรรมที่เกี่ยวข้อง
+       - ความพร้อมด้านแรงงาน/โครงสร้างพื้นฐาน
+    3) ระบุจุดขายของจังหวัดจำนวน 3 ข้อ (short bullet points)
+    4) ข้อควรระวัง 1–2 ข้อ (risk factors)
+    5) ข้อแนะนำเชิงกลยุทธ์ 1–2 ข้อ (strategic suggestions)
+    6) ปิดท้ายด้วยประโยคสรุป (1 ประโยค)
+    7) ห้ามใช้ตัวหนา หรือสัญลักษณ์ ** ใดๆ
 
     Output format (สำคัญมาก):
     จังหวัดที่แนะนำ: <ชื่อจังหวัด>
@@ -186,12 +194,21 @@ def ai_recommend_province(tsic2, top5_df):
     2) <จุดขาย 2>
     3) <จุดขาย 3>
 
-    เขียนเป็นภาษาไทยทั้งหมด
-    และวิเคราะห์เฉพาะข้อมูลจากตารางที่ให้ไปเท่านั้น
+    ข้อควรระวัง:
+    - <ข้อควรระวัง 1>
+    - <ข้อควรระวัง 2>
+
+    ข้อแนะนำเชิงกลยุทธ์:
+    - <คำแนะนำ 1>
+    - <คำแนะนำ 2>
+
+    สรุปท้าย:
+    <1 ประโยค>
     """
 
     response = model.generate_content(prompt)
     return response.text.strip()
+
 
 
 
