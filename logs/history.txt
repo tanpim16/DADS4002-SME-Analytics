@@ -58,3 +58,14 @@
 [2025-11-27 21:23:08] READ: job_vacancy
 [2025-11-28 20:26:48] Run Market Overview Analysis
 [2025-11-28 20:27:02] READ: job_vacancy
+[2025-11-28 21:10:31] READ: job_vacancy
+[2025-11-28 21:11:12] UPDATE job_vacancy: ระนอง -> 170
+[2025-11-28 21:11:22] READ: job_vacancy
+[2025-11-28 21:12:12] DELETE job_vacancy: ตรัง, old_value=260
+[2025-11-28 21:12:35] RESTORE job_vacancy: ตรัง -> 260
+[2025-11-28 21:12:40] READ: job_vacancy
+[2025-11-28 21:14:05] Run Market Overview Analysis
+[2025-11-28 21:19:47] Run Province Comparison
+[2025-11-28 21:25:01] Run SME Growth Gap Analysis (AI)
+[2025-11-28 21:29:44] Run SME Growth Gap Analysis (AI)
+[2025-11-28 21:30:41] Run SME Growth Gap Analysis (AI)
