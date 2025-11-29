@@ -69,3 +69,9 @@
 [2025-11-28 21:25:01] Run SME Growth Gap Analysis (AI)
 [2025-11-28 21:29:44] Run SME Growth Gap Analysis (AI)
 [2025-11-28 21:30:41] Run SME Growth Gap Analysis (AI)
+[2025-11-29 09:08:10] Run Province Comparison
+[2025-11-29 09:22:03] Run Market Overview Analysis
+[2025-11-29 09:31:37] Run Market Overview Analysis
+[2025-11-29 09:32:21] Run Province Comparison
+[2025-11-29 09:33:21] Run SME Growth Gap Analysis (AI)
+[2025-11-29 09:33:36] READ: job_vacancy
