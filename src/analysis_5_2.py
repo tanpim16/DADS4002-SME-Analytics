@@ -1,6 +1,6 @@
 # ==========================================================
 # analysis_5_2.py — Compare 2 Provinces (Task 5.2) — UPDATED
-# With Business Type Search + AVG SME Logic (แบบ 5.3)
+# With Business Type Search + AVG SME Logic
 # ==========================================================
 
 from analysis_queries import query_to_df
