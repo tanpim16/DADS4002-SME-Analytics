@@ -76,3 +76,14 @@
 [2025-11-29 09:33:21] Run SME Growth Gap Analysis (AI)
 [2025-11-29 09:33:36] READ: job_vacancy
 [2025-11-29 09:46:50] Run SME Growth Gap Analysis (AI)
+[2025-11-29 10:10:50] Run SME Growth Gap Analysis (Manual)
+[2025-11-29 10:22:59] READ: job_vacancy
+[2025-11-29 11:32:58] READ: job_vacancy
+[2025-11-29 11:34:08] UPDATE job_vacancy: เลย -> 151
+[2025-11-29 11:34:11] READ: job_vacancy
+[2025-11-29 11:34:55] DELETE job_vacancy: ตาก, old_value=221
+[2025-11-29 11:35:15] RESTORE job_vacancy: ตาก -> 221
+[2025-11-29 11:35:18] READ: job_vacancy
+[2025-11-29 11:36:06] Run Market Overview Analysis
+[2025-11-29 11:41:35] Run Province Comparison
+[2025-11-29 11:44:06] Run SME Growth Gap Analysis (AI)
